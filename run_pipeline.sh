@@ -373,7 +373,10 @@ step_summary() {
     done
     if [[ -s "$OUT/assembly/polish/flagstat.txt" ]]; then
       echo "--- flagstat ---"; head -n 7 "$OUT/assembly/polish/flagstat.txt"; fi
-    local b; b="$(ls "$OUT"/busco/busco_out/short_summary*.txt 2>/dev/null | head -n1 || true)"
+        local b="" f
+    for f in "$OUT"/busco/busco_out/short_summary*.txt; do
+      if [[ -e "$f" ]]; then b="$f"; break; fi
+    done
     if [[ -n "$b" ]]; then echo "--- BUSCO ---"; grep -E "C:|Complete|Fragmented|Missing" "$b" || true; fi
   } | tee "$OUT/summary.txt"
   local fa
