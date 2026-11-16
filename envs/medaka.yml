@@ -1,0 +1,7 @@
+name: bioinfo-medaka
+channels:
+  - conda-forge
+  - bioconda
+  - nodefaults
+dependencies:
+  - medaka

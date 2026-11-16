@@ -1,0 +1,5 @@
+sample	short_r1	short_r2	long	assembly
+isolate1	reads/iso1_R1.fastq.gz	reads/iso1_R2.fastq.gz	reads/iso1_ont.fastq.gz	-
+isolate2	reads/iso2_R1.fq.gz	reads/iso2_R2.fq.gz	-	-
+isolate3	-	-	reads/iso3_ont.fastq	-
+isolate4	reads/iso4_R1.fq.gz	-	-	drafts/iso4_draft.fasta

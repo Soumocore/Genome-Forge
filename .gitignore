@@ -1,0 +1,11 @@
+# data and outputs are never committed
+data/raw/*
+!data/raw/.gitkeep
+results/
+logs/
+*.fq.gz
+*.fastq.gz
+*.sam
+*.bam
+*.bai
+.DS_Store

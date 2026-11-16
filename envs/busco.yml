@@ -1,0 +1,7 @@
+name: bioinfo-busco
+channels:
+  - conda-forge
+  - bioconda
+  - nodefaults
+dependencies:
+  - busco>=5
