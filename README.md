@@ -1,27 +1,64 @@
-# Flexible Genome Assembly Pipeline
+# Genome-Forge
 
-One command, whatever reads you have. The pipeline looks at your inputs and picks the right route automatically:
+[![ShellCheck](https://github.com/Soumocore/Genome-Forge/actions/workflows/shellcheck.yml/badge.svg)](https://github.com/Soumocore/Genome-Forge/actions/workflows/shellcheck.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+![Bash](https://img.shields.io/badge/made%20with-bash-1f425f.svg)
+![Conda](https://img.shields.io/badge/install-conda%20%2F%20mamba-44a833.svg)
+![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20WSL-lightgrey.svg)
+
+**One command to go from raw reads to a polished, validated genome assembly, whatever reads you have.**
+Illumina (paired or single-end), Nanopore, PacBio, or an existing assembly: Genome-Forge looks at your inputs and picks the right route.
+
+```bash
+./run_pipeline.sh --r1 S1_R1.fastq.gz --long S1_ont.fastq.gz
+```
+
+> **Status:** v1.0. Command-line handling, input checks and the multi-sample logic are tested; validation on more real datasets is ongoing. Found a problem or have a dataset that breaks it? Please [open an issue](https://github.com/Soumocore/Genome-Forge/issues).
+
+## Why Genome-Forge?
+
+- **Works with what you have.** No separate scripts per data type.
+- **Beginner-safe.** Clear errors for missing, empty or corrupt files; auto-detects R2 from R1; sensible defaults.
+- **Restartable.** Finished steps are skipped, so a crashed run picks up where it stopped.
+- **Many samples at once.** Give it a table and it processes every sample, reporting any that fail.
+- **Reproducible.** One conda environment file per tool group, and a log for every tool.
+
+## Workflow
+
+```mermaid
+flowchart TD
+  A[Illumina R1/R2] --> B[FastQC] --> C[BBDuk trim] --> D[FastQC trimmed]
+  E[Nanopore / PacBio] --> F[NanoPlot] --> G[NanoFilt] --> H[Flye]
+  C --> S[SPAdes: short reads only]
+  H --> I[Medaka: Nanopore]
+  I --> J[Polypolish: short-read polish]
+  C --> J
+  J --> K[BUSCO + summary]
+  S --> K
+```
 
 | You provide | What runs |
 |---|---|
-| Illumina paired-end **+** Nanopore | QC → trim/filter → **Flye** → **Medaka** → **Polypolish** → BUSCO |
-| Illumina paired-end **+** PacBio | QC → trim/filter → **Flye** → **Polypolish** → BUSCO |
-| Nanopore or PacBio only | QC → filter → **Flye** (+ **Medaka** for ONT) → BUSCO |
-| Illumina only (paired or single-end) | QC → trim → **SPAdes** → BUSCO |
+| Illumina paired-end **+** Nanopore | QC, trim/filter, **Flye**, **Medaka**, **Polypolish**, BUSCO |
+| Illumina paired-end **+** PacBio | the same, minus Medaka (Nanopore-only) |
+| Nanopore or PacBio only | QC, filter, **Flye** (+ **Medaka** for ONT), BUSCO |
+| Illumina only (paired or single-end) | QC, trim, **SPAdes**, BUSCO |
 | An existing assembly (+ optional reads) | polish and/or BUSCO only |
-| A table of many samples | all of the above, one after another |
+| A table of many samples | all of the above, one row per sample |
 
-Input files can be `.fastq`, `.fq`, with or without `.gz`, with any file names.
+Input files can be `.fastq` or `.fq`, with or without `.gz`, with any file names.
 
 ## Install
 
 ```bash
-git clone https://github.com/<you>/hybrid-assembly-pipeline.git
-cd hybrid-assembly-pipeline
+git clone https://github.com/Soumocore/Genome-Forge.git
+cd Genome-Forge
 # Install Miniforge first if you have no conda: https://github.com/conda-forge/miniforge
 bash scripts/setup_envs.sh        # creates: bioinfo, bioinfo-medaka, bioinfo-busco
 conda activate bioinfo
 ```
+
+Windows users: run it inside [WSL](https://learn.microsoft.com/windows/wsl/install) (Ubuntu).
 
 Optionally put the script on your PATH so you can run it from any folder:
 
@@ -100,6 +137,17 @@ summary.txt                      contigs / length / N50 / flagstat / BUSCO
 logs/                            one log per tool
 ```
 
+`summary.txt` has this layout (values depend on your data):
+
+```
+Sample: <name>
+flye/assembly.fasta:  contigs=<n> total_bp=<n> longest_bp=<n> N50=<n>
+medaka/consensus.fasta: contigs=<n> total_bp=<n> longest_bp=<n> N50=<n>
+polish/final_polished.fasta: contigs=<n> total_bp=<n> longest_bp=<n> N50=<n>
+--- flagstat ---  (mapping statistics of short reads against the polished assembly)
+--- BUSCO ---     (Complete / Fragmented / Missing)
+```
+
 ## Reading the results
 
 - **FastQC**: a WARN is not a failure; compare adapter content and per-base quality before and after trimming.
@@ -115,17 +163,19 @@ logs/                            one log per tool
 - BUSCO downloads its lineage dataset on first use, so it needs internet.
 - More help: [`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md), [`docs/CONCEPTS.md`](docs/CONCEPTS.md).
 
-## Notes on changes from the original tutorial
-
-- Polypolish follows its documented workflow (`bwa mem -a`, mates aligned separately, `polypolish filter` then `polish`).
-- `ref=adapters` uses BBDuk's bundled adapters; no download needed.
-- Medaka and BUSCO get separate environments, and `nodefaults` avoids the Anaconda Terms-of-Service error.
-- The unverified Nanopore test URL (ERR164407) was removed; supply your own long reads.
-
 ## Tools
 
-FastQC · BBDuk (BBMap) · NanoPlot · NanoFilt · Flye · SPAdes · Medaka · BWA · SAMtools · Polypolish · BUSCO
+FastQC · BBDuk (BBMap) · NanoPlot · NanoFilt · Flye · SPAdes · Medaka · BWA · SAMtools · Polypolish · BUSCO.
+Please also cite these tools when you publish results; Genome-Forge only wires them together.
+
+## Citing
+
+If Genome-Forge helped your work, use the **Cite this repository** button in the sidebar (from `CITATION.cff`).
+
+## Contributing
+
+Bug reports, test datasets and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
-MIT. Replace `<YOUR NAME>` in `LICENSE` before publishing.
+MIT, see [LICENSE](LICENSE).

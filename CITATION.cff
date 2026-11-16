@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "If you use Genome-Forge, please cite it as below, and also cite the underlying tools."
+title: "Genome-Forge: a flexible genome assembly pipeline"
+type: software
+version: 1.0.0
+date-released: 2026-11-17
+license: MIT
+repository-code: "https://github.com/Soumocore/Genome-Forge"
+authors:
+  - family-names: "Roy"
+    given-names: "Soumik"
+keywords:
+  - bioinformatics
+  - genome assembly
+  - nanopore
+  - illumina
+  - pacbio
+  - polishing
+  - BUSCO
+abstract: "A one-command Bash pipeline that takes Illumina, Nanopore, PacBio reads or an existing assembly through QC, assembly, polishing and BUSCO validation."
